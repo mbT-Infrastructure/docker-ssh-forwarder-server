@@ -1,0 +1,19 @@
+# Authentication
+AllowUsers user
+AuthorizedKeysFile /media/ssh/authorized_keys
+HostKey /media/ssh/host_key
+ChallengeResponseAuthentication no
+PasswordAuthentication no
+PermitRootLogin no
+UsePAM no
+
+# Connection
+AllowStreamLocalForwarding no
+AllowTcpForwarding yes
+ForceCommand sleep infinity
+PermitListen ###PERMIT_LISTEN###
+PermitOpen ###PERMIT_OPEN###
+Port 22
+
+# Other
+PidFile none

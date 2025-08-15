@@ -1,0 +1,51 @@
+services:
+
+    ssh-forwarder-server:
+        container_name: ssh-forwarder-server
+        build: .
+        mem_limit: 20M
+        environment:
+            - AUTHORIZED_PUBLIC_KEYS=
+            - HOST_KEY=
+            - PERMIT_LISTEN=8080
+            - PERMIT_OPEN=caddy:80
+        volumes:
+            - ./data-local/ssh-key.pub:/media/ssh/authorized_keys:ro
+            - ./data-local/ssh-key:/media/ssh/host_key:ro
+        ports:
+            - "127.0.0.1:8022:22"
+            - "127.0.0.1:8080:8080"
+
+    ssh-forwarder-local:
+        image: madebytimo/ssh-forwarder
+        depends_on:
+            ssh-forwarder-server:
+                condition: service_healthy
+        environment:
+            - SERVER_URL=ssh://user@ssh-forwarder-server
+            - |
+                SERVER_KEY=
+            - FORWARD_DIRECTION=local
+            - SOURCE_ADDRESS=8080
+            - TARGET_ADDRESS=caddy:80
+
+    ssh-forwarder-remote:
+        image: madebytimo/ssh-forwarder
+        depends_on:
+            ssh-forwarder-server:
+                condition: service_healthy
+        environment:
+            - SERVER_URL=ssh://user@ssh-forwarder-server
+            - |
+                SERVER_KEY=
+            - FORWARD_DIRECTION=remote
+            - SOURCE_ADDRESS=0.0.0.0:8081
+            - TARGET_ADDRESS=caddy:80
+        ports:
+            - "127.0.0.1:8081:8081"
+
+    caddy:
+        image: caddy
+        mem_limit: 20M
+        ports:
+            - "127.0.0.1:8000:80"
