@@ -11,6 +11,7 @@ UsePAM no
 AllowStreamLocalForwarding no
 AllowTcpForwarding yes
 ForceCommand sleep infinity
+GatewayPorts clientspecified
 PermitListen ###PERMIT_LISTEN###
 PermitOpen ###PERMIT_OPEN###
 Port 22
