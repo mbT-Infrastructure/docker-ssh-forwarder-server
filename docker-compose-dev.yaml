@@ -7,45 +7,38 @@ services:
         environment:
             - AUTHORIZED_PUBLIC_KEYS=
             - HOST_KEY=
-            - PERMIT_LISTEN=8080
-            - PERMIT_OPEN=caddy:80
+            - PERMIT_LISTEN=8000
+            - PERMIT_OPEN=website:80
+        read_only: true
         volumes:
             - ./data-local/ssh-key.pub:/media/ssh/authorized_keys:ro
             - ./data-local/ssh-key:/media/ssh/host_key:ro
         ports:
             - "127.0.0.1:8022:22"
-            - "127.0.0.1:8080:8080"
+            - "127.0.0.1:8000:8000"
 
-    ssh-forwarder-local:
+    ssh-forwarder:
         image: madebytimo/ssh-forwarder
         depends_on:
             ssh-forwarder-server:
                 condition: service_healthy
+        mem_limit: 20M
         environment:
             - SERVER_URL=ssh://user@ssh-forwarder-server
             - |
                 SERVER_KEY=
             - FORWARD_DIRECTION=local
-            - SOURCE_ADDRESS=8080
-            - TARGET_ADDRESS=caddy:80
-
-    ssh-forwarder-remote:
-        image: madebytimo/ssh-forwarder
-        depends_on:
-            ssh-forwarder-server:
-                condition: service_healthy
-        environment:
-            - SERVER_URL=ssh://user@ssh-forwarder-server
-            - |
-                SERVER_KEY=
-            - FORWARD_DIRECTION=remote
-            - SOURCE_ADDRESS=0.0.0.0:8081
-            - TARGET_ADDRESS=caddy:80
+            - SOURCE_ADDRESS=*:8000
+            - TARGET_ADDRESS=website:80
+            - FORWARD_DIRECTION_B=remote
+            - SOURCE_ADDRESS_B=*:8001
+            - TARGET_ADDRESS_B=website:80
+        read_only: true
         ports:
-            - "127.0.0.1:8081:8081"
+            - "127.0.0.1:8001:8001"
 
-    caddy:
-        image: caddy
+    website:
+        image: docker.io/library/caddy
         mem_limit: 20M
-        ports:
-            - "127.0.0.1:8000:80"
+        command: caddy respond --listen :80 'Hello!'
+        read_only: true
