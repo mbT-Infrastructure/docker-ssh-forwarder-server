@@ -10,6 +10,8 @@ UsePAM no
 # Connection
 AllowStreamLocalForwarding no
 AllowTcpForwarding yes
+ClientAliveCountMax 3
+ClientAliveInterval 20
 ForceCommand sleep infinity
 GatewayPorts clientspecified
 PermitListen ###PERMIT_LISTEN###
